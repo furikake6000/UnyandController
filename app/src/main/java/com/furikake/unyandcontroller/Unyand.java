@@ -7,17 +7,13 @@ import android.view.Window;
 import android.graphics.Color;
 import android.os.Handler;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class Unyand extends Activity implements View.OnClickListener{
+public class Unyand extends Activity{
 
     //Const
     private static final String ip = "10.0.2.2";    //IPアドレス
@@ -26,14 +22,9 @@ public class Unyand extends Activity implements View.OnClickListener{
     private final Handler handler = new Handler();
 
     //Values
-    private Socket socket;
-    private InputStream ips;
-    private OutputStream ops;
-
-    //Layouts
-    private EditText sendTextbox;
-    private Button sendButton;
-    private TextView logView;
+    private static Socket socket;
+    private static InputStream ips;
+    private static OutputStream ops;
 
     //Call when app starts
     @Override
@@ -41,33 +32,7 @@ public class Unyand extends Activity implements View.OnClickListener{
         super.onCreate(bundle);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        //Set layout
-        LinearLayout layout = new LinearLayout(this);
-        layout.setBackgroundColor(Color.WHITE);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        setContentView(layout);
-
-        //Sendtextbox
-        sendTextbox = new EditText(this);
-        sendTextbox.setText("");
-        sendTextbox.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT));
-        layout.addView(sendTextbox);
-
-        //SendButton
-        sendButton = new Button(this);
-        sendButton.setText("送信");
-        sendButton.setOnClickListener(this);
-        sendButton.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,LinearLayout.LayoutParams.WRAP_CONTENT));
-        layout.addView(sendButton);
-
-        //LogView
-        logView = new TextView(this);
-        logView.setText("");
-        logView.setTextSize(16);
-        logView.setTextColor(Color.BLACK);
-        logView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT));
-        layout.addView(logView);
+        setContentView(new UnyandView(this));
     }
 
     //Called when activity starts
@@ -92,18 +57,18 @@ public class Unyand extends Activity implements View.OnClickListener{
     }
 
     //ログへの書き込み
-    private void printLog(final String text){
+    private static void printLog(final String text){
         //ハンドラの作成(メインスレッド以外はUIに直接アクセスできないため)
         handler.post(new Runnable() {
             @Override
             public void run() {
-                logView.setText(text + "\n" + logView.getText());
+
             }
         });
     }
 
     //通信
-    private void connect(String address, int port){
+    private static void connect(String address, int port){
         //接続
         printLog(address + "に接続開始 ポート:" + port);
         do{
@@ -127,13 +92,31 @@ public class Unyand extends Activity implements View.OnClickListener{
     }
 
     //切断
-    private void disconnect(){
+    private static void disconnect(){
         try {
             socket.close();
         }catch (Exception e){
         }
     }
 
+    //バイト列送信
+    public static void sendBytes(byte[] bytes){
+        //何も入力されていなければ終了
+        if(bytes.length == 0)return;
+        //通信が確立されていなければ終了
+        if(socket == null || !socket.isConnected())return;
+
+        try{
+            //データ送信
+            ops.write(bytes);
+            ops.flush();
+        }catch(IOException e){
+            //送信失敗
+
+        }
+    }
+
+    /*
     //ボタンクリック
     public void onClick(View v){
         //現在ボタンが一つしか無いため分岐なし
@@ -162,4 +145,5 @@ public class Unyand extends Activity implements View.OnClickListener{
         });
         thread.start();
     }
+    */
 }

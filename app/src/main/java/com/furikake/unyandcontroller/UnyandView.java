@@ -8,13 +8,12 @@ import android.content.Context;
 import android.graphics.*;
 import android.view.View;
 import android.view.MotionEvent;
-import java.util.HashMap;
 
 public class UnyandView extends View {
 
     final int BUTTON_NUM = 5;
 
-    String logText = "";
+    public static String logText = "";
     boolean[] isButtonDown = new boolean[BUTTON_NUM];
 
     //Constructor
@@ -79,22 +78,34 @@ public class UnyandView extends View {
         return true;
     }
 
+    //ボタン押下処理
     boolean enableButton(int index){
         if(isButtonDown[index]){
             return false;
         }else{
             //更新データ送信処理
+            byte[] sb = new byte[2];
+            sb[0] = (byte)index;
+            sb[1] = 0x01;
+
+            UnyandNetwork.sendBytes(sb);
 
             isButtonDown[index] = true;
             return true;
         }
     }
 
+    //ボタン押上処理
     boolean disableButton(int index){
         if(!isButtonDown[index]){
             return false;
         }else{
             //更新データ送信処理
+            byte[] sb = new byte[2];
+            sb[0] = (byte)index;
+            sb[1] = 0x00;
+
+            UnyandNetwork.sendBytes(sb);
 
             isButtonDown[index] = false;
             return true;
